@@ -2,8 +2,8 @@
 APP=/home/node/app
 DATA=$APP/data
 cd $APP
-mkdir -p config
-cat > config/config.yaml <<EOF
+
+cat > /tmp/st-config.yaml <<EOF
 dataRoot: ./data
 listen: true
 listenAddress:
@@ -14,11 +14,17 @@ protocol:
   ipv6: false
 port: ${PORT:-10000}
 whitelistMode: false
+hostWhitelist:
+  enabled: false
+  scan: false
 basicAuthMode: true
 basicAuthUser:
   username: "${ST_USER}"
   password: "${ST_PASS}"
 EOF
+mkdir -p "$APP/config"
+cp /tmp/st-config.yaml "$APP/config/config.yaml" 2>/dev/null
+cp /tmp/st-config.yaml "$APP/config.yaml" 2>/dev/null
 
 BACKUP_OK=0
 
@@ -60,7 +66,7 @@ else
   echo "[backup] not configured, backups disabled"
 fi
 
-node --max-old-space-size=384 server.js &
+node --max-old-space-size=384 server.js --listen --port "${PORT:-10000}" &
 NODE_PID=$!
 
 if [ "$BACKUP_OK" = "1" ]; then
